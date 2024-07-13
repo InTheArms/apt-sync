@@ -2,6 +2,8 @@ import os
 import subprocess
 from loguru import logger
 
+# 配置logger，将日志信息存储到文件中
+logger.add("log_file.log", rotation="500 MB", retention="10 days", compression="zip")
 
 def get_dists():
     with open('sources.list', 'r') as FILE:
@@ -27,9 +29,9 @@ def get_dists():
             rsync_url = f"rsync://{os_url.replace('https://', '')}/dists/{os_version_tag}-{categorie}"
             rsync_path = f"{current_path}/mirror/{os_url.replace('https://', '').split('/')[0]}/ubuntu/dists/"
             command = f"rsync -av {rsync_url} {rsync_path}"
-            print(rsync_url)
-            print(rsync_path)
-            print(command)
+            logger.info(rsync_path)
+            logger.info(command)
+            logger.info(rsync_url)
             try:
                 result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
                 if result.stdout:
@@ -66,6 +68,9 @@ def get_others():
             rsync_url = f"rsync://{os_url.replace('https://', '')}/{other}"
             rsync_path = f"{current_path}/mirror/ubuntu"
             command = f"rsync -av {rsync_url}  {rsync_path}"
+            logger.info(rsync_path)
+            logger.info(command)
+            logger.info(rsync_url)
             try:
                 result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
                 if result.stdout:
@@ -79,10 +84,8 @@ def get_others():
                     logger.error(e.stdout)
                 if e.stderr:
                     logger.error(e.stderr)
-    rsync_path = f"{current_path}/mirror/ubuntu"
-    command = f"cd {rsync_path} && ln -snf . ubuntu"
-    result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
 
 
 if __name__ == '__main__':
+    get_dists()
     get_others()
